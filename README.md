@@ -1,6 +1,7 @@
-This application will send Alertmanager alerts through to [Gotify](https://gotify.net).
+This application bridges Alertmanager alerts to [Gotify](https://gotify.net).
 
 # Notes
+* Listens on port 8080 by default.
 * Forwards `resolved` alerts, if sent.
 * Defaults, if not sent:
   | Field       | Default value |
@@ -15,7 +16,7 @@ This application will send Alertmanager alerts through to [Gotify](https://gotif
 
 e.g.
 ```bash
-docker run -e TZ=Europe/London -e GOTIFY_KEY=XXXXXXXX -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
+docker run -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY=XXXXXXXX -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
 ```
 
 ## Compose:
@@ -36,6 +37,8 @@ services:
   alertify:
     image: alertify:latest
     container_name: alertify
+    ports:
+      - "8080:8080"
     environment:
       - TZ=Europe/London
       - GOTIFY_KEY=XXXXXXXXXXXX
