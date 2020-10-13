@@ -12,11 +12,16 @@ This application bridges Alertmanager alerts to [Gotify](https://gotify.net).
 
 
 # Docker
+## Build
+```bash
+docker build . -t 'alertify:latest'
+```
+
 ## Run
 
 e.g.
 ```bash
-docker run -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY=XXXXXXXX -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
+docker run --name alertify -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY=XXXXXXXX -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
 ```
 
 ## Compose:

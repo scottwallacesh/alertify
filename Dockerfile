@@ -15,8 +15,8 @@ WORKDIR /app
 ADD alertify.py /app
 
 # Switching to a non-root user, please refer to https://aka.ms/vscode-docker-python-user-rights
-# RUN useradd appuser && chown -R appuser /app
-# USER appuser
+RUN useradd appuser && chown -R appuser /app
+USER appuser
 
 EXPOSE 8080
 
