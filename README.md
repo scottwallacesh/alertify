@@ -1,4 +1,4 @@
-This application will send Alertmanager alerts through to Gotify.
+This application will send Alertmanager alerts through to [Gotify](https://gotify.net).
 
 # Notes
 * Forwards `resolved` alerts, if sent.
