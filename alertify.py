@@ -65,18 +65,23 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         """
         if not self._healthcheck(message=False):
             return
-            
+
         content_length = int(self.headers['Content-Length'])
         rawdata = self.rfile.read(content_length)
 
         alert = json.loads(rawdata.decode())
 
+        if alert['status'] == 'resolved':
+            prefix = 'Resolved'
+        else:
+            prefix = alert['commonLabels'].get('severity', 'default').capitalize()
+
         gotify_msg = {
             'message': '{}: {}'.format(
-                alert['commonLabels']['severity'].capitalize(),
-                alert['commonAnnotations']['description']
+                prefix,
+                alert['commonAnnotations'].get('description', '...')
             ),
-            'priority': int(alert['commonLabels']['priority']) or 5
+            'priority': int(alert['commonLabels'].get('priority', 5))
         }
 
         (status, reason) = gotify_send(
