@@ -1,4 +1,21 @@
-This application bridges Alertmanager alerts to [Gotify](https://gotify.net).
+This application bridges [Prometheus Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) alerts to [Gotify](https://gotify.net/).
+
+# Usage
+```
+usage: alertify.py [-h] [-H]
+
+Bridge between Prometheus Alertmanager and Gotify
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -H, --healthcheck  Simply exit with 0 for healthy or 1 when unhealthy
+
+Three environment variables are required to be set:
+  * GOTIFY_SERVER: hostname of the Gotify server
+  * GOTIFY_PORT: port of the Gotify server
+  * GOTIFY_KEY: app token for alertify
+```
+
 
 # Notes
 * Listens on port 8080 by default.

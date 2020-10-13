@@ -127,7 +127,14 @@ if __name__ == '__main__':
         """
         Function to parse the CLI
         """
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description='Bridge between Prometheus Alertmanager and Gotify\n',
+            epilog='Three environment variables are required to be set:\n'
+                   '  * GOTIFY_SERVER: hostname of the Gotify server\n'
+                   '  * GOTIFY_PORT: port of the Gotify server\n'
+                   '  * GOTIFY_KEY: app token for alertify'
+        )
 
         parser.add_argument(
             '-H', '--healthcheck',
