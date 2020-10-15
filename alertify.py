@@ -7,15 +7,12 @@ Module to act as a Prometheus Exporter for Docker containers with a
 import argparse
 import http.client
 import json
-import logging
 import os
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 LISTEN_PORT = 8080
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+VERBOSE = int(os.environ.get('ALERTIFY_VERBOSE', 0))
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -31,7 +28,11 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         Method to handle GET requests
         """
         if self.path == '/healthcheck':
-            self._healthcheck()
+            if not healthy():
+                print('ERROR: Check requirements')
+                self._respond(500, 'ERR')
+
+            self._respond(200, 'OK')
 
     # Override built-in method
     # pylint: disable=invalid-name
@@ -42,56 +43,72 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         if self.path == '/alert':
             self._alerts()
 
-    def _healthcheck(self, message=True):
-        """
-        Method to return 200 or 500 response and an optional message
-        """
-        if not healthy():
-            self.send_response(500)
-            self.end_headers()
-            if message:
-                self.wfile.write(b'ERR')
-            return False
-
-        self.send_response(200)
+    def _respond(self, status, message):
+        self.send_response(int(status) or 500)
         self.end_headers()
-        if message:
-            self.wfile.write(b'OK')
-        return True
+        self.wfile.write(bytes(str(message).encode()))
 
     def _alerts(self):
         """
         Method to handle the request for alerts
         """
-        if not self._healthcheck(message=False):
+        if not healthy():
+            print('ERROR: Check requirements')
+            self._respond(500, 'Server not configured correctly')
             return
 
         content_length = int(self.headers['Content-Length'])
         rawdata = self.rfile.read(content_length)
 
-        alert = json.loads(rawdata.decode())
+        try:
+            alert = json.loads(rawdata.decode())
+        except json.decoder.JSONDecodeError as error:
+            print(f'ERROR: Bad JSON: {error}')
+            self._respond(400, f'Bad JSON: {error}')
+            return
 
-        if alert['status'] == 'resolved':
-            prefix = 'Resolved'
-        else:
-            prefix = alert['commonLabels'].get('severity', 'default').capitalize()
+        if VERBOSE:
+            print('Received from Alertmanager:')
+            print(json.dumps(alert, indent=2))
 
-        gotify_msg = {
-            'message': '{}: {}'.format(
-                prefix,
-                alert['commonAnnotations'].get('description', '...')
-            ),
-            'priority': int(alert['commonLabels'].get('priority', 5))
-        }
+        try:
+            if alert['status'] == 'resolved':
+                prefix = 'Resolved'
+            else:
+                prefix = alert['commonLabels'].get(
+                    'severity', 'default').capitalize()
 
-        (status, reason) = gotify_send(
-            os.environ['GOTIFY_SERVER'],
-            os.environ['GOTIFY_PORT'],
-            os.environ['GOTIFY_KEY'],
-            gotify_msg
+            gotify_msg = {
+                'title': '{}: {}'.format(
+                    alert['receiver'],
+                    alert['commonLabels'].get('instance', 'Unknown')
+                ),
+                'message': '{}: {}'.format(
+                    prefix,
+                    alert['commonAnnotations'].get('description', '...')
+                ),
+                'priority': int(alert['commonLabels'].get('priority', 5))
+            }
+        except KeyError as error:
+            print(f'ERROR: KeyError: {error}')
+            self._respond(400, f'Missing field: {error}')
+            return
+
+        if VERBOSE:
+            print('Sending to Gotify:')
+            print(json.dumps(gotify_msg, indent=2))
+        response = 'Status: {status}, Reason: {reason}'.format(
+            **gotify_send(
+                os.environ['GOTIFY_SERVER'],
+                os.environ['GOTIFY_PORT'],
+                os.environ['GOTIFY_KEY'],
+                gotify_msg
+            )
         )
 
-        self.wfile.write(f'Status: {status}, Reason: {reason}'.encode())
+        if VERBOSE:
+            print(response)
+        self._respond(200, response)
 
 
 def gotify_send(server, port, authkey, payload):
@@ -108,7 +125,10 @@ def gotify_send(server, port, authkey, payload):
     gotify.request('POST', '/message', json.dumps(payload), headers)
     response = gotify.getresponse()
 
-    return (response.status, response.reason)
+    return {
+        'status': response.status,
+        'reason': response.reason
+    }
 
 
 def healthy():
@@ -154,7 +174,11 @@ if __name__ == '__main__':
             # Invert the sense of 'healthy' for Unix CLI usage
             return not healthy()
 
-        HTTPServer(('', LISTEN_PORT), HTTPHandler).serve_forever()
+        print(f'Starting web server on port {LISTEN_PORT}')
+        try:
+            HTTPServer(('', LISTEN_PORT), HTTPHandler).serve_forever()
+        except KeyboardInterrupt:
+            print('Exiting')
 
         return 0
 
