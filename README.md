@@ -2,18 +2,22 @@ This application bridges [Prometheus Alertmanager](https://prometheus.io/docs/al
 
 # Usage
 ```
-usage: alertify.py [-h] [-H]
+usage: alertify.py [-h] [-c CONFIG] [-H]
 
 Bridge between Prometheus Alertmanager and Gotify
 
 optional arguments:
-  -h, --help         show this help message and exit
-  -H, --healthcheck  Simply exit with 0 for healthy or 1 when unhealthy
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        path to config YAML. (default: alertify.yaml)
+  -H, --healthcheck     simply exit with 0 for healthy or 1 when unhealthy
 
-Three environment variables are required to be set:
-  * GOTIFY_SERVER: hostname of the Gotify server
-  * GOTIFY_PORT: port of the Gotify server
-  * GOTIFY_KEY: app token for alertify
+The following environment variables will override any config or default:
+  * LISTEN_PORT   (default: 8080)
+  * GOTIFY_SERVER (default: localhost)
+  * GOTIFY_PORT   (default: 80)
+  * GOTIFY_KEY    (default: None)
+  * VERBOSE       (default: False)
 ```
 
 
