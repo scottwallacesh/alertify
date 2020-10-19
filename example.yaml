@@ -1,0 +1,6 @@
+---
+# verbose: true
+gotify_server: gotifyserver.example.net
+gotify_key: sOmEsEcReTkEy1
+gotify_port: "80"
+listen_port: "8080"
