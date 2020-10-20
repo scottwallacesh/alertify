@@ -15,10 +15,11 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import yaml
 
 DEFAULTS = {
-    'listen_port': int(8080),
-    'gotify_server': str('localhost'),
-    'gotify_port': int(80),
+    'disable_resolved': bool(False),
     'gotify_key': str(),
+    'gotify_port': int(80),
+    'gotify_server': str('localhost'),
+    'listen_port': int(8080),
     'verbose': bool(False),
 }
 
@@ -92,6 +93,10 @@ class HTTPHandler(SimpleHTTPRequestHandler):
 
         try:
             if alert['status'] == 'resolved':
+                if self.config.get('disable_resolved'):
+                    print('Ignoring resolved messages')
+                    self._respond(200, 'Ignored. "resolved" messages are disabled')
+                    return
                 prefix = 'Resolved'
             else:
                 prefix = alert['commonLabels'].get(
