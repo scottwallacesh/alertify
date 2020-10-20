@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Module to act as a Prometheus Exporter for Docker containers with a
-    healthcheck configured
+Module to act as a bridge between Prometheus Alertmanager and Gotify
 """
 
 import argparse
@@ -26,8 +25,7 @@ DEFAULTS = {
 
 class HTTPHandler(SimpleHTTPRequestHandler):
     """
-    Class to encompass the requirements of a Prometheus Exporter
-        for Docker containers with a healthcheck configured
+    Class to handle the HTTP requests from a client
     """
 
     config = None
