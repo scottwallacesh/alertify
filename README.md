@@ -13,11 +13,12 @@ optional arguments:
   -H, --healthcheck     simply exit with 0 for healthy or 1 when unhealthy
 
 The following environment variables will override any config or default:
-  * LISTEN_PORT   (default: 8080)
-  * GOTIFY_SERVER (default: localhost)
-  * GOTIFY_PORT   (default: 80)
-  * GOTIFY_KEY    (default: None)
-  * VERBOSE       (default: False)
+  * DISABLE_RESOLVED (default: False)
+  * GOTIFY_KEY       (default: None)
+  * GOTIFY_PORT      (default: 80)
+  * GOTIFY_SERVER    (default: localhost)
+  * LISTEN_PORT      (default: 8080)
+  * VERBOSE          (default: False)
 ```
 
 
