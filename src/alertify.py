@@ -5,7 +5,6 @@ Module to act as a bridge between Prometheus Alertmanager and Gotify
 
 import argparse
 import functools
-import http.client
 import json
 import os
 import sys
@@ -13,6 +12,8 @@ from distutils.util import strtobool
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 import yaml
+
+import gotify
 
 DEFAULTS = {
     'delete_onresolve': bool(False),
@@ -24,113 +25,6 @@ DEFAULTS = {
     'listen_port': int(8080),
     'verbose': bool(False),
 }
-
-
-class Gotify:
-    """
-    Class to handle Gotify communications
-    """
-    verbose = False
-
-    def __init__(self, server, port, app_key, client_key=None):
-        self.api = http.client.HTTPConnection(server, port)
-        self.app_key = app_key
-        self.client_key = client_key
-        self.base_headers = {
-            'Content-type': 'application/json',
-            'Accept': 'application/json',
-        }
-
-    def _call(self, method, url, body=None):
-        """
-        Method to call Gotify with an app or client key as appropriate
-        """
-        headers = self.base_headers.copy()
-        if method in ['GET', 'DELETE']:
-            headers['X-Gotify-Key'] = self.client_key
-        else:
-            headers['X-Gotify-Key'] = self.app_key
-
-        if self.verbose:
-            print('Sending to Gotify:')
-            print(body)
-
-        try:
-            self.api.request(method, url, body=body, headers=headers)
-            response = self.api.getresponse()
-        except ConnectionRefusedError as error:
-            print(f'ERROR: {error}')
-            return {
-                'status': error.errno,
-                'reason': error.strerror
-            }
-
-        resp_obj = {
-            'status': response.status,
-            'reason': response.reason,
-            'json': None
-        }
-        rawbody = response.read()
-        if len(rawbody) > 0:
-            try:
-                resp_obj['json'] = json.loads(rawbody.decode())
-            except json.decoder.JSONDecodeError as error:
-                print(f'ERROR: {error}')
-
-        if self.verbose:
-            print('Returned from Gotify:')
-            print(json.dumps(resp_obj, indent=2))
-            print('Status: {status}, Reason: {reason}'.format(**resp_obj))
-
-        return resp_obj
-
-    def delete(self, msg_id):
-        """
-        Method to delete a message from the Gotify server
-        """
-        if self.verbose:
-            print(f'Deleting message ID {msg_id}')
-        return self._call('DELETE', f'/message/{msg_id}')
-
-    def find_byfingerprint(self, message):
-        """
-        Method to return the ID of a matching message
-        """
-        try:
-            new_fingerprint = message['fingerprint']
-        except KeyError:
-            if self.verbose:
-                print('No fingerprint found in new message')
-            return None
-
-        for old_message in self.messages():
-            try:
-                old_fingerprint = old_message['extras']['alertify']['fingerprint']
-                if old_fingerprint == new_fingerprint:
-                    return old_message['id']
-            except KeyError:
-                if self.verbose:
-                    print(
-                        f'No fingerprint found in message {old_message["id"]}')
-                continue
-
-        return None
-
-    def messages(self):
-        """
-        Method to return a list of messages from the Gotify server
-        """
-        if self.verbose:
-            print('Fetching existing messages from Gotify')
-        return self._call('GET', '/message')['json'].get('messages', None)
-
-    def send_alert(self, payload):
-        """
-        Method to send a message payload to a Gotify server
-        """
-        if self.verbose:
-            print('Sending message to Gotify')
-        return self._call('POST', '/message', body=json.dumps(payload, indent=2))
 
 
 class HTTPHandler(SimpleHTTPRequestHandler):
@@ -158,11 +52,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
             self._respond(400, f'Bad JSON: {error}')
             return
 
-        if self.config.get('verbose'):
-            print('Received from Alertmanager:')
-            print(json.dumps(am_msg, indent=2))
-
-        gotify = Gotify(
+        gotify_client = gotify.Gotify(
             self.config.get('gotify_server'),
             self.config.get('gotify_port'),
             self.config.get('gotify_key'),
@@ -170,7 +60,8 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         )
 
         if self.config.get('verbose'):
-            gotify.verbose = True
+            gotify_client.verbose = True
+            print(f'DEBUG: Received from Alertmanager: {json.dumps(am_msg, indent=2)}')
 
         for alert in am_msg['alerts']:
             try:
@@ -180,11 +71,15 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                         self._respond(
                             200, 'Ignored. "resolved" messages are disabled')
                         continue
+
                     if self.config.get('delete_onresolve'):
-                        alert_id = gotify.find_byfingerprint(alert)
+                        alert_id = gotify_client.find_byfingerprint(alert)
                         if alert_id:
-                            response = gotify.delete(alert_id)
-                        continue
+                            response = gotify_client.delete(alert_id)
+                            continue
+                        if self.config.get('verbose'):
+                            print('DEBUG: Could not find a matching message to delete.')
+
                     prefix = 'Resolved'
                 else:
                     prefix = alert['labels'].get(
@@ -211,7 +106,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                 self._respond(400, f'Missing field: {error}')
                 return
 
-            response = gotify.send_alert(gotify_msg)
+            response = gotify_client.send_alert(gotify_msg)
 
         try:
             self._respond(response['status'], response['reason'])
@@ -275,7 +170,7 @@ def parse_config(configfile):
         with open(configfile, 'r') as file:
             parsed = yaml.safe_load(file.read())
     except FileNotFoundError as error:
-        print(f'WARN: {error}')
+        print(f'{error}')
         parsed = {}
 
     # Iterate over the DEFAULTS dictionary and check for environment variables
@@ -291,7 +186,7 @@ def parse_config(configfile):
 
     if config['verbose']:
         print(
-            f'Config:\n'
+            f'DEBUG: Config: '
             f'{yaml.dump(config, explicit_start=True, default_flow_style=False)}'
         )
     return config
