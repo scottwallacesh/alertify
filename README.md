@@ -9,7 +9,7 @@ Bridge between Prometheus Alertmanager and Gotify
 optional arguments:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
-                        path to config YAML. (default: ./alertify.yaml)
+                        path to config YAML. (default: alertify.yaml)
   -H, --healthcheck     simply exit with 0 for healthy or 1 when unhealthy
 
 The following environment variables will override any config or default:
