@@ -193,11 +193,11 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                 gotify_msg = {
                     'title': '{}: {}'.format(
                         prefix,
-                        alert['annotations'].get('description', '[nodata]'),
+                        alert['annotations'].get('summary'),
                     ),
                     'message': '{}: {}'.format(
                         alert['labels'].get('instance', '[unknown]'),
-                        alert['annotations'].get('summary'),
+                        alert['annotations'].get('description', '[nodata]'),
                     ),
                     'priority': int(alert['labels'].get('priority', 5)),
                     'extras': {
