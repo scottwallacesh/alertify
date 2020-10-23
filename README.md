@@ -9,11 +9,13 @@ Bridge between Prometheus Alertmanager and Gotify
 optional arguments:
   -h, --help            show this help message and exit
   -c CONFIG, --config CONFIG
-                        path to config YAML. (default: alertify.yaml)
+                        path to config YAML. (default: ./alertify.yaml)
   -H, --healthcheck     simply exit with 0 for healthy or 1 when unhealthy
 
 The following environment variables will override any config or default:
+  * DELETE_ONRESOLVE (default: False)
   * DISABLE_RESOLVED (default: False)
+  * GOTIFY_CLIENT    (default: None)
   * GOTIFY_KEY       (default: None)
   * GOTIFY_PORT      (default: 80)
   * GOTIFY_SERVER    (default: localhost)
@@ -24,13 +26,15 @@ The following environment variables will override any config or default:
 
 # Notes
 * Listens on port 8080 by default.
-* Forwards `resolved` alerts, if sent.
+* Forwards `resolved` alerts, if not disabled.
+* Resolved alerts delete the original alert, if enabled.
 * Defaults, if not sent:
   | Field       | Default value |
   |-------------|---------------|
+  | Description | `[nodata]`    |
+  | Instance    | `[unknown]`   |
   | Priority    | `5`           |
-  | Description | `...`         |
-  | Severity    | `Default`     |
+  | Severity    | `Warning`     |
 
 
 # Docker
@@ -43,7 +47,7 @@ docker build . -t 'alertify:latest'
 
 e.g.
 ```bash
-docker run --name alertify -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY=XXXXXXXX -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
+docker run --name alertify -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY=_APPKEY_ -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
 ```
 
 ## Compose:
@@ -68,7 +72,8 @@ services:
       - "8080:8080"
     environment:
       - TZ=Europe/London
-      - GOTIFY_KEY=XXXXXXXXXXXX
+      - GOTIFY_KEY=_APPKEY_
+      - GOTIFY_CLIENT=_CLIENTKEY_
       - GOTIFY_SERVER=gotify
       - GOTIFY_PORT=80
     restart: unless-stopped
