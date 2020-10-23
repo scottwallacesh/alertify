@@ -6,6 +6,7 @@ Module to act as a bridge between Prometheus Alertmanager and Gotify
 import argparse
 import functools
 import json
+import logging
 import os
 import sys
 from distutils.util import strtobool
@@ -38,7 +39,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         Method to handle the request for alerts
         """
         if not healthy(self.config):
-            print('ERROR: Check requirements')
+            logging.error('Check requirements')
             self._respond(500, 'Server not configured correctly')
             return
 
@@ -48,9 +49,12 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         try:
             am_msg = json.loads(rawdata.decode())
         except json.decoder.JSONDecodeError as error:
-            print(f'ERROR: Bad JSON: {error}')
+            logging.error('Bad JSON: %s', error)
             self._respond(400, f'Bad JSON: {error}')
             return
+
+        logging.debug('Received from Alertmanager:\n%s',
+                      json.dumps(am_msg, indent=2))
 
         gotify_client = gotify.Gotify(
             self.config.get('gotify_server'),
@@ -59,15 +63,11 @@ class HTTPHandler(SimpleHTTPRequestHandler):
             self.config.get('gotify_client')
         )
 
-        if self.config.get('verbose'):
-            gotify_client.verbose = True
-            print(f'DEBUG: Received from Alertmanager: {json.dumps(am_msg, indent=2)}')
-
         for alert in am_msg['alerts']:
             try:
                 if alert['status'] == 'resolved':
                     if self.config.get('disable_resolved'):
-                        print('Ignoring resolved messages')
+                        logging.info('Ignoring resolved messages')
                         self._respond(
                             200, 'Ignored. "resolved" messages are disabled')
                         continue
@@ -77,8 +77,8 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                         if alert_id:
                             response = gotify_client.delete(alert_id)
                             continue
-                        if self.config.get('verbose'):
-                            print('DEBUG: Could not find a matching message to delete.')
+                        logging.debug(
+                            'Could not find a matching message to delete.')
 
                     prefix = 'Resolved'
                 else:
@@ -102,7 +102,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                     }
                 }
             except KeyError as error:
-                print(f'ERROR: KeyError: {error}')
+                logging.error('KeyError: %s', error)
                 self._respond(400, f'Missing field: {error}')
                 return
 
@@ -128,7 +128,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         """
         if self.path == '/healthcheck':
             if not healthy(self.config):
-                print('ERROR: Check requirements')
+                logging.error('Check requirements')
                 self._respond(500, 'ERR')
 
             self._respond(200, 'OK')
@@ -170,7 +170,7 @@ def parse_config(configfile):
         with open(configfile, 'r') as file:
             parsed = yaml.safe_load(file.read())
     except FileNotFoundError as error:
-        print(f'{error}')
+        logging.warning('No config file found (%s)', error.filename)
         parsed = {}
 
     # Iterate over the DEFAULTS dictionary and check for environment variables
@@ -184,11 +184,6 @@ def parse_config(configfile):
         else:
             config[key] = type(val)(config[key])
 
-    if config['verbose']:
-        print(
-            f'DEBUG: Config: '
-            f'{yaml.dump(config, explicit_start=True, default_flow_style=False)}'
-        )
     return config
 
 
@@ -228,8 +223,14 @@ if __name__ == '__main__':
         """
         main()
         """
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+
         args = parse_cli()
         config = parse_config(args.config)
+
+        if config.get('verbose'):
+            logger = logging.getLogger()
+            logger.setLevel(logging.DEBUG)
 
         if args.healthcheck:
             # Invert the sense of 'healthy' for Unix CLI usage
@@ -237,13 +238,18 @@ if __name__ == '__main__':
 
         listen_port = config.get('listen_port')
 
-        print(f'Starting web server on port {listen_port}')
+        logging.debug(
+            'Config:\n%s',
+            yaml.dump(config, explicit_start=True, default_flow_style=False)
+        )
+
+        logging.info('Starting web server on port %d', listen_port)
         try:
             with HTTPServer(('', listen_port), HTTPHandler) as webserver:
                 HTTPHandler.set_config(config)
                 webserver.serve_forever()
         except KeyboardInterrupt:
-            print('Exiting')
+            logging.info('Exiting')
 
         return 0
 
