@@ -39,13 +39,13 @@ class Gotify:
             logging.error(error)
             return {
                 'status': error.errno,
-                'reason': error.strerror
+                'reason': error.strerror,
             }
 
         resp_obj = {
             'status': response.status,
             'reason': response.reason,
-            'json': None
+            'json': None,
         }
         rawbody = response.read()
         if len(rawbody) > 0:
@@ -82,7 +82,10 @@ class Gotify:
                 if old_fingerprint == new_fingerprint:
                     return old_message['id']
             except KeyError:
-                logging.debug('No fingerprint found in message ID: %s', old_message['id'])
+                logging.debug(
+                    'No fingerprint found in message ID: %s',
+                    old_message['id'],
+                )
                 continue
 
         logging.debug('No fingerprint matched.')
@@ -93,7 +96,9 @@ class Gotify:
         Method to return a list of messages from the Gotify server
         """
         if not self.client_key:
-            logging.debug('No client key is configured.  No messages could be retrieved.')
+            logging.debug(
+                'No client key is configured.  No messages could be retrieved.'
+            )
             return []
         logging.debug('Fetching existing messages from Gotify')
         return self._call('GET', '/message')['json'].get('messages', [])
