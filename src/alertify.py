@@ -32,6 +32,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
     """
     Class to handle the HTTP requests from a client
     """
+
     config = None
 
     def _alerts(self):
@@ -53,14 +54,13 @@ class HTTPHandler(SimpleHTTPRequestHandler):
             self._respond(400, f'Bad JSON: {error}')
             return
 
-        logging.debug('Received from Alertmanager:\n%s',
-                      json.dumps(am_msg, indent=2))
+        logging.debug('Received from Alertmanager:\n%s', json.dumps(am_msg, indent=2))
 
         gotify_client = gotify.Gotify(
             self.config.get('gotify_server'),
             self.config.get('gotify_port'),
             self.config.get('gotify_key'),
-            self.config.get('gotify_client')
+            self.config.get('gotify_client'),
         )
 
         for alert in am_msg['alerts']:
@@ -69,7 +69,9 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                     if self.config.get('disable_resolved'):
                         logging.info('Ignoring resolved messages')
                         self._respond(
-                            200, 'Ignored. "resolved" messages are disabled')
+                            200,
+                            'Ignored. "resolved" messages are disabled',
+                        )
                         continue
 
                     if self.config.get('delete_onresolve'):
@@ -77,13 +79,11 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                         if alert_id:
                             response = gotify_client.delete(alert_id)
                             continue
-                        logging.debug(
-                            'Could not find a matching message to delete.')
+                        logging.debug('Could not find a matching message to delete.')
 
                     prefix = 'Resolved'
                 else:
-                    prefix = alert['labels'].get(
-                        'severity', 'warning').capitalize()
+                    prefix = alert['labels'].get('severity', 'warning').capitalize()
 
                 gotify_msg = {
                     'title': '{}: {}'.format(
@@ -97,9 +97,9 @@ class HTTPHandler(SimpleHTTPRequestHandler):
                     'priority': int(alert['labels'].get('priority', 5)),
                     'extras': {
                         'alertify': {
-                            'fingerprint': alert.get('fingerprint', None)
+                            'fingerprint': alert.get('fingerprint', None),
                         }
-                    }
+                    },
                 }
             except KeyError as error:
                 logging.error('KeyError: %s', error)
@@ -122,7 +122,7 @@ class HTTPHandler(SimpleHTTPRequestHandler):
         self.wfile.write(bytes(str(message).encode()))
 
     # Override built-in method
-    def do_GET(self):   # pylint: disable=invalid-name
+    def do_GET(self):  # pylint: disable=invalid-name
         """
         Method to handle GET requests
         """
@@ -154,9 +154,11 @@ def healthy(config):
     """
     Simple function to return if all the requirements are met
     """
-    return all([
-        len(config.get('gotify_key', ''))
-    ])
+    return all(
+        [
+            len(config.get('gotify_key', '')),
+        ]
+    )
 
 
 @functools.lru_cache
@@ -188,6 +190,7 @@ def parse_config(configfile):
 
 
 if __name__ == '__main__':
+
     def parse_cli():
         """
         Function to parse the CLI
@@ -201,18 +204,20 @@ if __name__ == '__main__':
         parser = argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description='Bridge between Prometheus Alertmanager and Gotify\n',
-            epilog='The following environment variables will override any config or default:\n' +
-                   '\n'.join(defaults)
+            epilog='The following environment variables will override any config or default:\n'
+            + '\n'.join(defaults),
         )
 
         parser.add_argument(
-            '-c', '--config',
+            '-c',
+            '--config',
             default=f'{os.path.splitext(__file__)[0]}.yaml',
             help=f'path to config YAML.  (default: {os.path.splitext(__file__)[0]}.yaml)',
         )
 
         parser.add_argument(
-            '-H', '--healthcheck',
+            '-H',
+            '--healthcheck',
             action='store_true',
             help='simply exit with 0 for healthy or 1 when unhealthy',
         )
@@ -223,7 +228,10 @@ if __name__ == '__main__':
         """
         main()
         """
-        logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+        logging.basicConfig(
+            format='%(levelname)s: %(message)s',
+            level=logging.INFO,
+        )
 
         args = parse_cli()
         config = parse_config(args.config)
@@ -240,7 +248,7 @@ if __name__ == '__main__':
 
         logging.debug(
             'Config:\n%s',
-            yaml.dump(config, explicit_start=True, default_flow_style=False)
+            yaml.dump(config, explicit_start=True, default_flow_style=False),
         )
 
         logging.info('Starting web server on port %d', listen_port)
