@@ -12,8 +12,8 @@ ADD requirements.txt .
 RUN python -m pip install -r requirements.txt
 
 WORKDIR /app
-ADD src/alertify.py /app
-ADD src/gotify.py /app
+COPY alertify.py /app
+COPY src /app/src
 
 # Switching to a non-root user, please refer to https://aka.ms/vscode-docker-python-user-rights
 RUN useradd appuser && chown -R appuser /app

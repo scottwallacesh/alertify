@@ -96,7 +96,7 @@ class Gotify:
         Method to return a list of messages from the Gotify server
         """
         if not self.client_key:
-            logging.debug(
+            logging.warning(
                 'No client key is configured.  No messages could be retrieved.'
             )
             return []
@@ -109,3 +109,9 @@ class Gotify:
         """
         logging.debug('Sending message to Gotify')
         return self._call('POST', '/message', body=json.dumps(payload, indent=2))
+
+    def healthcheck(self):
+        """
+        Method to perform a healthcheck against Gotify
+        """
+        return self._call('GET', '/health')
