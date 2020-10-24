@@ -28,6 +28,8 @@ The following environment variables will override any config or default:
 * Listens on port 8080 by default.
 * Forwards `resolved` alerts, if not disabled.
 * Resolved alerts delete the original alert, if enabled.
+* Requires a Gotify app key to send alerts to Gotify
+* Requires a Gotify client key to delete original alert on resolution
 * Defaults, if not sent:
   | Field       | Default value |
   |-------------|---------------|
@@ -72,6 +74,7 @@ services:
       - "8080:8080"
     environment:
       - TZ=Europe/London
+      - DELETE_ONRESOLVE=true
       - GOTIFY_KEY=_APPKEY_
       - GOTIFY_CLIENT=_CLIENTKEY_
       - GOTIFY_SERVER=gotify
