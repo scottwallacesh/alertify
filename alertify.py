@@ -56,8 +56,6 @@ if __name__ == '__main__':
 
         args = parse_cli()
 
-        logging.info('Version: %s', alertify.__version__)
-
         # forwarder = alertify.Alertify(args.config)
         forwarder = alertify.Alertify()
 
@@ -68,6 +66,8 @@ if __name__ == '__main__':
         if args.healthcheck:
             # Invert the sense of 'healthy' for Unix CLI usage
             return not forwarder.healthcheck.report()
+
+        logging.info('Version: %s', alertify.__version__)
 
         if forwarder.config.verbose:
             logging.debug('Parsed config:')
