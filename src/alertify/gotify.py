@@ -4,6 +4,7 @@ Module to handle communication with the Gotify server
 import http.client
 import json
 import logging
+import socket
 
 
 class Gotify:
@@ -35,8 +36,8 @@ class Gotify:
         try:
             self.api.request(method, url, body=body, headers=headers)
             response = self.api.getresponse()
-        except ConnectionRefusedError as error:
-            logging.error(error)
+        except (ConnectionRefusedError, socket.gaierror) as error:
+            logging.error('Connection error: %s', error)
             return {
                 'status': error.errno,
                 'reason': error.strerror,
@@ -52,7 +53,7 @@ class Gotify:
             try:
                 resp_obj['json'] = json.loads(rawbody.decode())
             except json.decoder.JSONDecodeError as error:
-                logging.error(error)
+                logging.error('Could not parse JSON: %s', error)
 
         logging.debug('Returned from Gotify:\n%s', json.dumps(resp_obj, indent=2))
         logging.debug('Status: %s, Reason: %s', resp_obj['status'], resp_obj['reason'])
