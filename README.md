@@ -33,8 +33,6 @@ The following environment variables will override any config or default:
 * Defaults, if not sent:
   | Field       | Default value |
   |-------------|---------------|
-  | Description | `[nodata]`    |
-  | Instance    | `[unknown]`   |
   | Priority    | `5`           |
   | Severity    | `Warning`     |
 

@@ -37,14 +37,16 @@ class MessageHandler:
             else:
                 prefix = alert['labels'].get('severity', 'warning')
 
+            instance = alert['labels'].get('instance', None)
+
             gotify_msg = {
                 'title': '[{}] {}'.format(
                     prefix.upper(),
                     alert['annotations'].get('summary'),
                 ),
-                'message': '{}: {}'.format(
-                    alert['labels'].get('instance', '[unknown]'),
-                    alert['annotations'].get('description', '[nodata]'),
+                'message': '{}{}'.format(
+                    f'{instance}: ' if instance else '',
+                    alert['annotations'].get('description', ''),
                 ),
                 'priority': int(alert['labels'].get('priority', 5)),
                 'extras': {
