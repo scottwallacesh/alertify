@@ -13,14 +13,14 @@ optional arguments:
   -H, --healthcheck     simply exit with 0 for healthy or 1 when unhealthy
 
 The following environment variables will override any config or default:
-  * DELETE_ONRESOLVE (default: False)
-  * DISABLE_RESOLVED (default: False)
-  * GOTIFY_CLIENT    (default: None)
-  * GOTIFY_KEY       (default: None)
-  * GOTIFY_PORT      (default: 80)
-  * GOTIFY_SERVER    (default: localhost)
-  * LISTEN_PORT      (default: 8080)
-  * VERBOSE          (default: 0)
+  * DELETE_ONRESOLVE  (default: False)
+  * DISABLE_RESOLVED  (default: False)
+  * GOTIFY_KEY_APP    (default: None)
+  * GOTIFY_KEY_CLIENT (default: None)
+  * GOTIFY_PORT       (default: 80)
+  * GOTIFY_SERVER     (default: localhost)
+  * LISTEN_PORT       (default: 8080)
+  * VERBOSE           (default: 0)
 ```
 
 

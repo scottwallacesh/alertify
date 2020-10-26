@@ -25,8 +25,8 @@ class Alertify:
         self.gotify = Gotify(
             self.config.gotify_server,
             self.config.gotify_port,
-            self.config.gotify_key,
-            self.config.gotify_client,
+            self.config.gotify_key_app,
+            self.config.gotify_key_app,
         )
         self.message_handler = MessageHandler(
             self.gotify,

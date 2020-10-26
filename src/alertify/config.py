@@ -16,8 +16,8 @@ class Config:
 
     delete_onresolve = bool(False)
     disable_resolved = bool(False)
-    gotify_client = str()
-    gotify_key = str()
+    gotify_key_app = str()
+    gotify_key_client = str()
     gotify_port = int(80)
     gotify_server = str('localhost')
     listen_port = int(8080)
