@@ -21,7 +21,7 @@ class Config:
     gotify_port = int(80)
     gotify_server = str('localhost')
     listen_port = int(8080)
-    verbose = bool(False)
+    verbose = int(0)
 
     def __init__(self, configfile=None):
         """

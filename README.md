@@ -20,7 +20,7 @@ The following environment variables will override any config or default:
   * GOTIFY_PORT      (default: 80)
   * GOTIFY_SERVER    (default: localhost)
   * LISTEN_PORT      (default: 8080)
-  * VERBOSE          (default: False)
+  * VERBOSE          (default: 0)
 ```
 
 
