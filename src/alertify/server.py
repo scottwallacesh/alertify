@@ -31,6 +31,7 @@ class Server:
         try:
             with HTTPServer(('', self.port), http_handler) as webserver:
                 webserver.serve_forever()
+                return True
         except KeyboardInterrupt:
             logging.info('Exiting')
 

@@ -59,7 +59,7 @@ class Config:
     @classmethod
     def keys(cls):
         """
-        Method to return the defaults as a list of keys
+        Method to return the defaults as a list of dict_keys
         """
         return [
             attr[0]

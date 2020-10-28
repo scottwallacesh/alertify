@@ -15,10 +15,9 @@ class Healthcheck:
         """
         Simple method to return a boolean state of the general health
         """
-
         return all(
             [
-                self.gotify.healthcheck(),
+                self.gotify_alive(),
             ]
         )
 

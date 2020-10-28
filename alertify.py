@@ -59,14 +59,14 @@ if __name__ == '__main__':
         # forwarder = alertify.Alertify(args.config)
         forwarder = alertify.Alertify()
 
-        #-----------------------------
+        # -----------------------------
         # Calculate logging level
-        #-----------------------------
+        # -----------------------------
         # Config  :: Verbose:   0 = WARNING,  1 = INFO,  2 = DEBUG
         # Logging :: Loglevel: 30 = WARNING, 20 = INFO, 10 = DEBUG
         logger = logging.getLogger()
         logger.setLevel(30 - (forwarder.config.verbose * 10))
-        #-----------------------------
+        # -----------------------------
 
         if args.healthcheck:
             # Invert the sense of 'healthy' for Unix CLI usage
