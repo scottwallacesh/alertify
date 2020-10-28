@@ -25,6 +25,7 @@ The following environment variables will override any config or default:
 
 
 # Notes
+* Requires Python v3.6 or greater (f-strings are used)
 * Listens on port 8080 by default.
 * Forwards `resolved` alerts, if not disabled.
 * Resolved alerts delete the original alert, if enabled.
