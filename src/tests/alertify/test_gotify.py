@@ -55,9 +55,9 @@ class GotifyTest(unittest.TestCase):
             }
         ]
 
-        self.assertEqual(
+        self.assertListEqual(
             self.gotify_client.find_byfingerprint({'fingerprint': 'deadbeefcafebabe'}),
-            42,
+            [42],
         )
 
     def test_messages(self):
