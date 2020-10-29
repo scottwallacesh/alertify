@@ -77,20 +77,19 @@ class Gotify:
             logging.debug('No fingerprint found in new message')
             return None
 
+        msg_list = []
         for old_message in self.messages():
             try:
                 old_fingerprint = old_message['extras']['alertify']['fingerprint']
                 if old_fingerprint == new_fingerprint:
-                    return old_message['id']
+                    msg_list.append(old_message['id'])
             except KeyError:
-                logging.debug(
+                logging.warning(
                     'No fingerprint found in message ID: %s',
                     old_message['id'],
                 )
-                continue
 
-        logging.debug('No fingerprint matched.')
-        return None
+        return msg_list
 
     def messages(self):
         """

@@ -28,10 +28,9 @@ class MessageHandler:
                     }
 
                 if self.delete_onresolve:
-                    alert_id = self.gotify.find_byfingerprint(alert)
-                    if alert_id:
-                        return self.gotify.delete(alert_id)
-                    logging.warning('Could not find a matching message to delete.')
+                    for alert_id in self.gotify.find_byfingerprint(alert):
+                        if not self.gotify.delete(alert_id):
+                            logging.error('There was a problem removing message ID %d', alert_id)
 
                 prefix = 'resolved'
             else:
