@@ -65,7 +65,7 @@ if __name__ == '__main__':
         # Config  :: Verbose:   0 = WARNING,  1 = INFO,  2 = DEBUG
         # Logging :: Loglevel: 30 = WARNING, 20 = INFO, 10 = DEBUG
         logger = logging.getLogger()
-        logger.setLevel(30 - (forwarder.config.verbose * 10))
+        logger.setLevel(max(logging.WARNING - (forwarder.config.verbose * 10), 10))
         # -----------------------------
 
         if args.healthcheck:
