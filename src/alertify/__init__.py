@@ -6,7 +6,7 @@ __author__ = 'Scott Wallace'
 __email__ = 'scott@wallace.sh'
 __maintainer__ = 'Scott Wallace'
 
-__version__ = '1.5'
+__version__ = '1.6'
 
 from .config import Config
 from .gotify import Gotify
