@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import patch
 
-from alertify import messaging, gotify  # pylint: disable=import-error
+from Alertify import gotify, messaging  # pylint: disable=import-error
 
 
 class MessageHandlerTest(unittest.TestCase):
@@ -24,7 +24,7 @@ class MessageHandlerTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch('alertify.gotify.Gotify.send_alert')
+    @patch('Alertify.gotify.Gotify.send_alert')
     def test_process(self, mock_send_alert):
         """Test"""
         mock_send_alert.return_value = {

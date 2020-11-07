@@ -8,7 +8,7 @@ import logging
 import os
 import sys
 
-from src import alertify
+from src import Alertify
 
 if __name__ == '__main__':
 
@@ -16,10 +16,10 @@ if __name__ == '__main__':
         """
         Function to parse the CLI
         """
-        maxlen = max([len(key) for key in alertify.Config.defaults()])
+        maxlen = max([len(key) for key in Alertify.Config.defaults()])
         defaults = [
             f'  * {key.upper().ljust(maxlen)} (default: {val if val != "" else "None"})'
-            for key, val in alertify.Config.defaults().items()
+            for key, val in Alertify.Config.defaults().items()
         ]
 
         parser = argparse.ArgumentParser(
@@ -56,8 +56,8 @@ if __name__ == '__main__':
 
         args = parse_cli()
 
-        # forwarder = alertify.Alertify(args.config)
-        forwarder = alertify.Alertify()
+        alertify = Alertify.Alertify()
+        alertify.configure(args.config)
 
         # -----------------------------
         # Calculate logging level
@@ -65,21 +65,22 @@ if __name__ == '__main__':
         # Config  :: Verbose:   0 = WARNING,  1 = INFO,  2 = DEBUG
         # Logging :: Loglevel: 30 = WARNING, 20 = INFO, 10 = DEBUG
         logger = logging.getLogger()
-        logger.setLevel(max(logging.WARNING - (forwarder.config.verbose * 10), 10))
+        logger.setLevel(max(logging.WARNING - (alertify.config.verbose * 10), 10))
         # -----------------------------
 
         if args.healthcheck:
             # Invert the sense of 'healthy' for Unix CLI usage
-            return not forwarder.healthcheck.report()
+            _, status = alertify.healthcheck()
+            return status == 200
 
-        logging.info('Version: %s', alertify.__version__)
+        logging.info('Version: %s', Alertify.__version__)
 
-        if forwarder.config.verbose:
+        if alertify.config.verbose:
             logging.debug('Parsed config:')
-            for key, val in forwarder.config.items():
+            for key, val in alertify.config.items():
                 logging.debug('%s: %s', key, val)
 
-        forwarder.server.listen_and_run()
+        alertify.run()
 
         return 0
 

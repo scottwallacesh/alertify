@@ -1,10 +1,10 @@
 """
-Module to handle unit tests for the alertify.gotify module
+Module to handle unit tests for the Alertify.gotify module
 """
 import unittest
 from unittest.mock import patch
 
-from alertify import gotify  # pylint: disable=import-error
+from Alertify import gotify  # pylint: disable=import-error
 
 
 class GotifyTest(unittest.TestCase):
@@ -45,7 +45,7 @@ class GotifyTest(unittest.TestCase):
             },
         )
 
-    @patch('alertify.gotify.Gotify.messages')
+    @patch('Alertify.gotify.Gotify.messages')
     def test_find_byfingerprint(self, mock_messages):
         """Test"""
         mock_messages.return_value = [

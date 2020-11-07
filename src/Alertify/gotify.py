@@ -64,7 +64,7 @@ class Gotify:
         """
         Method to delete a message from the Gotify server
         """
-        logging.info('Deleting message ID: %s', msg_id)
+        logging.debug('Deleting message ID: %s', msg_id)
         return self._call('DELETE', f'/message/{msg_id}')
 
     def find_byfingerprint(self, message):

@@ -1,7 +1,7 @@
 """Test"""
 import unittest
 
-from alertify import config  # pylint: disable=import-error
+from Alertify import config  # pylint: disable=import-error
 
 
 class ConfigTest(unittest.TestCase):

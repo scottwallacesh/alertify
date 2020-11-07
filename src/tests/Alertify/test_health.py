@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import patch
 
-from alertify import healthcheck, gotify  # pylint: disable=import-error
+from Alertify import gotify, health  # pylint: disable=import-error
 
 
 class HealthcheckTest(unittest.TestCase):
@@ -12,7 +12,7 @@ class HealthcheckTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.healthcheck = healthcheck.Healthcheck(gotify.Gotify('', 0, '', ''))
+        cls.healthcheck = health.Healthcheck(gotify.Gotify('', 0, '', ''))
 
     @classmethod
     def tearDownClass(cls):
@@ -24,21 +24,10 @@ class HealthcheckTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch('alertify.healthcheck.Healthcheck.gotify_alive')
-    def test_report(self, mock_healthcheck):
+    @patch('Alertify.health.Healthcheck.gotify_alive')
+    def test_gotify_alive(self, mock_gotify_alive):
         """Test"""
-        mock_healthcheck.return_value = {
-            'status': 200,
-            'reason': 'OK',
-            'json': None,
-        }
-
-        self.assertTrue(self.healthcheck.report())
-
-    @patch('alertify.healthcheck.Healthcheck.gotify_alive')
-    def test_gotify_alive(self, mock_healthcheck):
-        """Test"""
-        mock_healthcheck.return_value = {
+        mock_gotify_alive.return_value = {
             'status': 200,
             'reason': 'OK',
             'json': None,

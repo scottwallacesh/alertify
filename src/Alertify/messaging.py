@@ -30,11 +30,11 @@ class MessageHandler:
                 if self.delete_onresolve:
                     for alert_id in self.gotify.find_byfingerprint(alert):
                         if not self.gotify.delete(alert_id):
-                            logging.error('There was a problem removing message ID %d', alert_id)
-                    return {
-                        'status': 200,
-                        'reason': 'Message deletion complete'
-                    }
+                            logging.error(
+                                'There was a problem removing message ID %d',
+                                alert_id,
+                            )
+                    return {'status': 200, 'reason': 'Message deletion complete'}
 
                 prefix = 'resolved'
             else:
