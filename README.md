@@ -48,7 +48,7 @@ docker build . -t 'alertify:latest'
 
 e.g.
 ```bash
-docker run --name alertify -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY=_APPKEY_ -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
+docker run --name alertify -p 8080:8080 -e TZ=Europe/London -e GOTIFY_KEY_APP=_APPKEY_ -e GOTIFY_SERVER=gotify -e GOTIFY_PORT=80 alertify:latest
 ```
 
 ## Compose:
@@ -74,8 +74,8 @@ services:
     environment:
       - TZ=Europe/London
       - DELETE_ONRESOLVE=true
-      - GOTIFY_KEY=_APPKEY_
-      - GOTIFY_CLIENT=_CLIENTKEY_
+      - GOTIFY_KEY_APP=_APPKEY_
+      - GOTIFY_KEY_CLIENT=_CLIENTKEY_
       - GOTIFY_SERVER=gotify
       - GOTIFY_PORT=80
     restart: unless-stopped
