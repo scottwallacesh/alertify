@@ -23,48 +23,52 @@ from .messaging import MessageHandler
 
 webapp = Flask(__name__)
 
+# FIXME: * Find a better way to deny FlaskView methods without using a `_`
+#          prefix or raising a NotFound exception
+
 
 class Alertify(FlaskView):
     """
-    Main alertify class
+    Main Alertify class
     """
 
     route_base = '/'
     trailing_slash = False
 
     def __init__(self):
+        # Instantiate with defaults
         self.configure()
 
     def configure(self, configfile=None):
         """
-        Configure the object from a configfile
+        Configure from a configfile
         """
-        try:
-            _ = request.args
+        # Deny via HTTP
+        if request:
             raise werkzeug.exceptions.NotFound
-        except RuntimeError:
-            self.config = Config(configfile)
-            self.gotify = Gotify(
-                self.config.gotify_server,
-                self.config.gotify_port,
-                self.config.gotify_key_app,
-                self.config.gotify_key_client,
-            )
-            self.msg_hndlr = MessageHandler(
-                self.gotify,
-                self.config.disable_resolved,
-                self.config.delete_onresolve,
-            )
+
+        self.config = Config(configfile)
+        self.gotify = Gotify(
+            self.config.gotify_server,
+            self.config.gotify_port,
+            self.config.gotify_key_app,
+            self.config.gotify_key_client,
+        )
+        self.msg_hndlr = MessageHandler(
+            self.gotify,
+            self.config.disable_resolved,
+            self.config.delete_onresolve,
+        )
 
     def run(self):
         """
         Listen on port and run webserver
         """
-        try:
-            _ = request.args
+        # Deny via HTTP
+        if request:
             raise werkzeug.exceptions.NotFound
-        except RuntimeError:
-            webapp.run(host='0.0.0.0', port=self.config.listen_port)
+
+        webapp.run(host='0.0.0.0', port=self.config.listen_port)
 
     @route('/alert', methods=['POST'])
     def alert(self):
